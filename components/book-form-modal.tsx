@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -78,13 +78,34 @@ export function BookFormModal({ isOpen, onClose, onSubmit, book, mode }: BookFor
   const form = useForm<BookFormData>({
     resolver: zodResolver(bookSchema),
     defaultValues: {
-      title: book?.title || "",
-      author: book?.author || "",
-      genre: book?.genre || "",
-      publishedYear: book?.publishedYear || new Date().getFullYear(),
-      status: book?.status || "Available",
+      title: "",
+      author: "",
+      genre: "",
+      publishedYear: new Date().getFullYear(),
+      status: "Available",
     },
   })
+
+  // Update form values when book prop changes
+  useEffect(() => {
+    if (book && mode === "edit") {
+      form.reset({
+        title: book.title,
+        author: book.author,
+        genre: book.genre,
+        publishedYear: book.publishedYear,
+        status: book.status,
+      })
+    } else if (mode === "add") {
+      form.reset({
+        title: "",
+        author: "",
+        genre: "",
+        publishedYear: new Date().getFullYear(),
+        status: "Available",
+      })
+    }
+  }, [book, mode, form])
 
   const handleSubmit = async (data: BookFormData) => {
     setIsSubmitting(true)
@@ -178,7 +199,7 @@ export function BookFormModal({ isOpen, onClose, onSubmit, book, mode }: BookFor
                       <FormLabel className="text-card-foreground font-[family-name:var(--font-open-sans)] font-medium">
                         Genre *
                       </FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-input border-border text-foreground font-[family-name:var(--font-open-sans)]">
                             <SelectValue placeholder="Select genre" />
@@ -228,7 +249,7 @@ export function BookFormModal({ isOpen, onClose, onSubmit, book, mode }: BookFor
                     <FormLabel className="text-card-foreground font-[family-name:var(--font-open-sans)] font-medium">
                       Status *
                     </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-input border-border text-foreground font-[family-name:var(--font-open-sans)]">
                           <SelectValue placeholder="Select status" />
